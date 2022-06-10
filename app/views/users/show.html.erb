@@ -8,7 +8,7 @@
         <%= link_to "⇨", user_path(date: @first_day.next_month), class: "btn btn-info" %>
         </td>
       <td>指定勤務時間 : <%= format_basic_info(@user.work_time) %></td>
-      <td colspan="3">基本時間 : <%= format_basic_info(@user.basic_time) %></td>
+      <td colspan="3" class="center">基本時間 : <%= format_basic_info(@user.basic_work_time) %></td>
       <td>月初日 : <%= l(@first_day, format: :short) %></td>
     </tr>
     
@@ -16,7 +16,7 @@
       <td>所属: <%= @user.department.present?? @user.department : "未所属" %></td>
       <td>名前: <%= @user.name %></td>
       <td>コード</td>
-      <td>#</td>
+      <td><%= @user.employee_number %></td>
       <td>出勤日数 : <%= @worked_sum %>日</td>
       <td>月末日 : <%= l(@last_day, format: :short) %></td>
     </tr>

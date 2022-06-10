@@ -7,6 +7,7 @@ ja:
           id: ID
           name: 名前
           email: メールアドレス
+          basic_work_time: 基本勤務時間
           department: 所属
           basic_time: 基本時間
           work_time: 勤務時間
