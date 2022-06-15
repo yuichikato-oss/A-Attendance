@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :edit_basic_info_admin, :update_basic_info]
+  before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :edit_basic_info_admin, :update_basic_info, :working_list]
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
   before_action :correct_user, only: [:edit, :update]
   before_action :admin_user, only: [:destroy, :edit_basic_info, :update_basic_info]
@@ -7,7 +7,7 @@ class UsersController < ApplicationController
   before_action :set_one_month, only: :show
   
   def index
-    @users = User.paginate(page: params[:page]).search(params[:search])
+    @users = User.paginate(page: params[:page],per_page: 10).search(params[:search])
   end
   
   def show
@@ -51,6 +51,10 @@ class UsersController < ApplicationController
   end
   
   def edit_basic_info_admin
+  end
+  
+  def working_list
+    @users = User.all
   end
   
   def update_basic_info
