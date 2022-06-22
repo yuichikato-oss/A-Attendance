@@ -1,0 +1,38 @@
+<% provide(:title, @user.name) %>
+<h1>【 勤怠ログ 】</h1>
+
+<div class = "m5px">
+  <%= form_with(model: @attendances, url: attendance_log_user_path(date: @first_day), method: :get, local: true) do |f| %>
+    <%= f.month_field :worked_on, {} %>
+    <%= f.submit '検索', class:"btn btn-sm btn-primary" %>
+    <%= link_to "Reset", attendance_log_user_path(date: @first_day), class:"btn btn-sm btn-warning" %>
+  <% end %>
+</div>
+
+<table class="table table-bordered table-striped table-condensed table-hover" id="table-attendances">
+  <thead>
+    <tr>
+      <th>日付</th>
+      <th>変更前出社時間</th>
+      <th>変更前退社時間</th>
+      <th>変更後出社</th>
+      <th>変更後退社</th>
+      <th>指示者</th>
+      <th>承認日</th>
+    </tr>
+  </thead>
+  
+  
+      <tbody>
+        <tr>
+        
+          
+        </tr>
+      </tbody>
+    
+</table>
+
+
+<div class="center">
+  <%= link_to "勤怠へ戻る", user_path(date: @first_day), class: "btn btn-md btn-default" %>
+</div>

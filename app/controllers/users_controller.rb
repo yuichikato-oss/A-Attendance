@@ -1,10 +1,10 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :edit_basic_info_admin, :update_basic_info, :working_list]
-  before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :update_basic_info]
-  before_action :correct_user, only: [:edit, :update]
+  before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :edit_basic_info_admin, :update_basic_info, :working_list, :attendance_log]
+  before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :update_basic_info, :attendance_log, :working_list]
+  before_action :correct_user, only: [:edit, :update, :attendance_log]
   before_action :admin_user, only: [:destroy, :edit_basic_info, :update_basic_info]
-  before_action :admin_or_correct_user, only: [:index, :show, :edit, :update]
-  before_action :set_one_month, only: :show
+  before_action :admin_or_correct_user, only: [:index, :show, :edit, :update, :working_list]
+  before_action :set_one_month, only: [:show, :attendance_log]
   
   def index
     @users = User.paginate(page: params[:page],per_page: 10).search(params[:search])
@@ -64,6 +64,24 @@ class UsersController < ApplicationController
       flash[:danger] = "#{@user.name}の更新は失敗しました。<br>" + @user.errors.full_messages.join("<br>")
     end
     redirect_to users_url
+  end
+  
+   # 勤怠修正ログ
+  def attendance_log
+    @attendances = Attendance.where(user_id: @user).where(c_approval: "承認").order(worked_on: "DESC")
+    
+    if params[:attendance].present?
+      unless params[:attendance][:worked_on] == ""
+        @search_date = params[:attendance][:worked_on] + "-1"
+        @attendances = @attendances.where(started_at: @search_date.in_time_zone.all_year)
+                                  .where(started_at: @search_date.in_time_zone.all_month)
+        if @attendances.count == 0
+          flash.now[:warning] = "承認済みの修正履歴がありません。"
+        end
+      else
+        flash.now[:warning] = "年月を選択してください。"
+      end
+    end
   end
   
   private
