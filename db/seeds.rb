@@ -1,12 +1,30 @@
 # config: utf-8
 
-User.create!(name: "Sample User",
+User.create!(name: "管理者",
         email: "sample@email.com",
-        employee_number: 1,
-        uid: 1,
+        employee_number: 101,
+        uid: 101,
         password: "password",
         password_confirmation: "password",
         admin: true)
+        
+User.create!(name: "上長A",
+            email: "sampleA@email.com",
+            employee_number: 102,
+            uid: 102,
+            password: "password",
+            password_confirmation: "password",
+            department: "総務",
+            superior: true)
+            
+User.create!(name: "上長B",
+            email: "sampleB@email.com",
+            employee_number: 103,
+            uid: 103,
+            password: "password",
+            password_confirmation: "password",
+            department: "総務",
+            superior: true)
 
 60.times do |n|
   name = Faker::Name.name
