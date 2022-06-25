@@ -1,10 +1,10 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :edit_basic_info_admin, :update_basic_info, :working_list, :attendance_log]
+  before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :edit_basic_info_admin, :update_basic_info, :working_list, :attendance_log, :csv_export]
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :update_basic_info, :attendance_log, :working_list]
   before_action :correct_user, only: [:edit, :update, :attendance_log]
   before_action :admin_user, only: [:destroy, :edit_basic_info, :update_basic_info]
   before_action :admin_or_correct_user, only: [:index, :show, :edit, :update, :working_list]
-  before_action :set_one_month, only: [:show, :attendance_log]
+  before_action :set_one_month, only: [:show, :attendance_log, :csv_export]
   
   def index
     @users = User.paginate(page: params[:page],per_page: 10).search(params[:search])
@@ -13,6 +13,19 @@ class UsersController < ApplicationController
   def show
     @worked_sum = @attendances.where.not(started_at: nil).count
   end
+  
+ def csv_export
+    respond_to do |format|
+      format.html do
+          #html用の処理を書く
+      end 
+      format.csv do
+          #csv用の処理を書く
+          send_data render_to_string,
+          filename: "【勤怠】#{@user.name}_#{@first_day.strftime("%Y-%m")}.csv", type: :csv
+      end
+    end
+  end  
   
   def new
     @user = User.new
@@ -91,6 +104,6 @@ class UsersController < ApplicationController
   end
   
   def basic_info_params
-    params.require(:user).permit(:department, :basic_work_time, :employee_number, :uid, :work_time)
+    params.require(:user).permit(:name, :email, :department, :basic_work_time, :employee_number, :uid, :password, :password_confirmation)
   end
 end
