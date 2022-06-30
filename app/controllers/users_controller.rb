@@ -79,6 +79,12 @@ class UsersController < ApplicationController
     redirect_to users_url
   end
   
+def import
+    # fileはtmpに自動で一時保存される
+    User.import(params[:file])
+    redirect_to users_url
+end
+
    # 勤怠修正ログ
   def attendance_log
     @attendances = Attendance.where(user_id: @user).where(c_approval: "承認").order(worked_on: "DESC")
