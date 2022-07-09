@@ -73,7 +73,7 @@
       <% @attendances.each do |day| %>
         <tr>
           <td>
-            <%= link_to "残業申請", "#", class: "btn btn-primary" %>
+            <%= link_to "残業申請", attendances_req_overtime_user_path(@user, date: day.worked_on), remote: true, class: "btn btn-primary" %>
           </td>
           <td><%= l(day.worked_on, format: :short) %></td>
           <td class='<%= "wday#{day.worked_on.wday}" %>'><%= $days_of_the_week[day.worked_on.wday] %></td>
@@ -94,8 +94,8 @@
               <% @total_working_times = @total_working_times.to_f + str_times.to_f %>
             <% end %>
           </td>
-          <td></td>
           <td><%= day.note %></td>
+          <td></td>
           <td></td>
           <td></td>
           <td></td>
@@ -120,4 +120,9 @@
       </tr>
     </tfoot>    
   </table>
-</div>
+</div
+
+<!--モーダルウインドウ-->
+<div>
+  <!--[残業申請モーダル]-->
+  <div id="req_overtime" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>

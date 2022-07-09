@@ -79,11 +79,21 @@ class UsersController < ApplicationController
     redirect_to users_url
   end
   
-def import
-    # fileはtmpに自動で一時保存される
-    User.import(params[:file])
+  def import
+    # fileはtmp(temporary)に自動で一時保存される
+    if params[:file].presence
+      @regist_check = User.import(params[:file])
+      
+      if @regist_check
+        flash[:success] = "CSVファイルのインポートが完了しました。"
+      else
+        flash[:danger] = "更新できるデータがありませんでした。"
+      end
+    else
+      flash[:danger] = "CSVファイルが選択されていません。"
+    end
     redirect_to users_url
-end
+  end
 
    # 勤怠修正ログ
   def attendance_log

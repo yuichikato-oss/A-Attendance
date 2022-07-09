@@ -20,6 +20,9 @@ Rails.application.routes.draw do
       get 'csv_export'
       get 'attendances/edit_one_month'
       patch 'attendances/update_one_month'
+      
+      get 'attendances/req_overtime'
+      patch 'attendances/update_overtime'
     end
     resources :attendances, only: :update
   end
