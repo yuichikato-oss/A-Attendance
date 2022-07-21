@@ -26,15 +26,26 @@
 </div>
 
 <div class="btn-users-show">
-  <% if current_user?(@user) %>
-    <span class="m5px">
-      <%= link_to "勤怠を編集", attendances_edit_one_month_user_path(date: @first_day), class: "btn btn-primary" %>
-    </span>
-    <span><%= link_to "CSV出力", csv_export_user_path(format: :csv, date: @first_day), class: "btn btn-primary" %><br></span>
-      <div class="m5px">
-        <%= link_to "勤怠修正ログ（承認済）", attendance_log_user_path(date: @first_day), class: "btn btn-primary" %>
-      </div>
+  <% if current_user.superior? %>
+    <% if @overwork_reqest.present? %>
+      <!-- link_to "【サンプル　残業申請のお知らせ】", user_attendance_sample_edit_overwork_notice_path(@user, @attendances) %> -->
+      <%= link_to "【残業申請のお知らせ】", user_attendance_edit_overwork_notice_path(@user, @attendances), remote: true, class: "text text-danger" %><%= @overwork_reqest.count %>件
+    <% else %>
+      <a>【残業申請のお知らせ】</a>
+    <% end %>
   <% end %>
+
+  <br>
+    <% if current_user?(@user) %>
+      <span class="m5px">
+        <%= link_to "勤怠を編集", attendances_edit_one_month_user_path(date: @first_day), class: "btn btn-primary" %>
+      </span>
+      <span><%= link_to "CSV出力", csv_export_user_path(format: :csv, date: @first_day), class: "btn btn-primary" %><br></span>
+        <div class="m5px">
+          <%= link_to "勤怠修正ログ（承認済）", attendance_log_user_path(date: @first_day), class: "btn btn-primary" %>
+        </div>
+    <% end %>
+  </br>
 </div>
 
 <div>
@@ -73,7 +84,7 @@
       <% @attendances.each do |day| %>
         <tr>
           <td>
-            <%= link_to "残業申請", attendances_req_overtime_user_path(@user, date: day.worked_on), remote: true, class: "btn btn-primary" %>
+            <%= link_to "残業申請", user_attendance_edit_overwork_reqest_path(@user, day), remote: true, class: "btn btn-primary" %>
           </td>
           <td><%= l(day.worked_on, format: :short) %></td>
           <td class='<%= "wday#{day.worked_on.wday}" %>'><%= $days_of_the_week[day.worked_on.wday] %></td>
@@ -125,4 +136,4 @@
 <!--モーダルウインドウ-->
 <div>
   <!--[残業申請モーダル]-->
-  <div id="req_overtime" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+  <div id="edit-overwork-reqest" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>

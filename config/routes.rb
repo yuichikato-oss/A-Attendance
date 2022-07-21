@@ -24,7 +24,10 @@ Rails.application.routes.draw do
       get 'attendances/req_overtime'
       patch 'attendances/update_overtime'
     end
-    resources :attendances, only: :update
+    resources :attendances do
+      get 'edit_overwork_reqest'
+      patch 'update_overwork_reqest'
+    end
   end
   resources :bases do
   end

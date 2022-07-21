@@ -1,0 +1,44 @@
+<% provide(:button_text, '変更を送信する') %>
+
+<div class="modal-dialog modal-lg modal-dialog-center">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">×</span>
+      </button>
+      <h1 class="modal-title">残業申請</h1>
+    </div>
+    <div class="modal-body">
+      <%= form_with(model: @attendance, url: user_attendance_update_overwork_reqest_path(@user, @attendance), local: true, method: :patch) do |f| %>
+        <table class="table table-bordered table-striped table-position table-hover">
+          <thead>
+            <tr>
+              <th>日付</th>
+              <th>曜日</th>
+              <th>終了予定時間</th>
+              <th>翌日</th>
+              <th>業務処理内容</th>
+              <th>指示書確認㊞</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><%= l(@attendance.worked_on, format: :short) %></td>
+              <td class='<%= "wday#{@attendance.worked_on.wday}" %>'><%= $days_of_the_week[@attendance.worked_on.wday] %></td>
+              <td><%= f.time_field :scheduled_end_time, class: 'form-control' %></td>
+              <td><%= f.check_box :next_day, id: "test" %></td>
+              <td><%= f.text_field :work_description, class: 'form-control' %></td>
+              <td class="dropdown_menu"><%= f.collection_select(:over_request_superior, @superiors, :id, :name, { include_blank: "選択してください" }, :required => true) %></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="center">
+          <%= f.submit "送信する", class: "btn btn-primary btn-block" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+
+

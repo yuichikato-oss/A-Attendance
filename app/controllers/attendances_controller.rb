@@ -1,8 +1,8 @@
 class AttendancesController < ApplicationController
-  before_action :set_user, only: [:edit_one_month, :update_one_month, :req_overtime]
-  before_action :logged_in_user, only: [:update, :edit_one_month]
+  before_action :set_user, only: [:edit_one_month, :update_one_month]
+  before_action :logged_in_user, only: [:update, :edit_one_month, :edit_overwork_reqest, :update_overwork_reqest]
   before_action :admin_or_correct_user, only: [:update, :edit_one_month, :update_one_month]
-  before_action :set_one_month, only: [:edit_one_month, :req_overtime]
+  before_action :set_one_month, only: [:edit_one_month]
   
   UPDATE_ERROR_MSG = "勤怠登録に失敗しました。やり直してください。"
   
@@ -52,11 +52,23 @@ class AttendancesController < ApplicationController
     redirect_to attendances_edit_one_month_user_url(date: params[:date])
   end
   
-  def req_overtime
-    
+  def edit_overwork_reqest
+    @user = User.find(params[:user_id])
+    @attendance = Attendance.find(params[:attendance_id])
+    @superiors = User.where(superior: true).where.not(id: @user.id)
   end
   
-  def update_overtime
+  def update_overtime_reqest
+    @user = User.find(params[:user_id])
+    @attendance = Attendance.find(params[:attendance_id])
+    params[:attendance][:over_request_status] = "申請中"
+    if overwork_params[:scheduled_end_time].present?
+      @attendance.update_attributes(overwork_params)
+      flash[:info] = "残業申請をしました。"
+    else
+      flash[:danger] = "残業申請をキャンセルしました。"
+    end
+    redirect_to @user
   end
   
   private
@@ -65,6 +77,10 @@ class AttendancesController < ApplicationController
    def attendances_params
      params.require(:user).permit(attendances: [:started_at, :finished_at, :note])[:attendances]
    end
+   
+    def overwork_params
+      params.require(:attendance).permit(:scheduled_end_time, :work_description, :next_day, :over_request_superior, :over_request_status)
+    end
    
    # beforeフィルター
    
