@@ -14,5 +14,18 @@ module AttendancesHelper
    def working_times(start, finish)
      format("%.2f", (((finish - start) / 60) / 60.0))
    end
+   
+     def working_overtime(scheduled_end_time, designated_work_end_time, next_day)
+    if  next_day == "1"
+      
+      format("%.2f", (scheduled_end_time.hour - designated_work_end_time.hour) + ((scheduled_end_time.min - designated_work_end_time.min) / 60.0) +24)
+    elsif next_day == "0"
+      format("%.2f", (scheduled_end_time.hour - designated_work_end_time.hour) + ((scheduled_end_time.min - designated_work_end_time.min) / 60.0))
+    end
+  end
+  
+  def superiors(over_request_superior)
+    User.find(over_request_superior)
+  end
 end
 

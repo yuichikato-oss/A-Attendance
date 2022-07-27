@@ -21,12 +21,16 @@ Rails.application.routes.draw do
       get 'attendances/edit_one_month'
       patch 'attendances/update_one_month'
       
-      get 'attendances/req_overtime'
-      patch 'attendances/update_overtime'
     end
     resources :attendances do
       get 'edit_overwork_reqest'
+      get 'edit_overwork_notice'
+      
       patch 'update_overwork_reqest'
+      
+      collection do
+        patch 'edit_overwork_approval'
+      end
     end
   end
   resources :bases do

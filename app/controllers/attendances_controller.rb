@@ -52,13 +52,15 @@ class AttendancesController < ApplicationController
     redirect_to attendances_edit_one_month_user_url(date: params[:date])
   end
   
+  # 残業申請モーダル
   def edit_overwork_reqest
     @user = User.find(params[:user_id])
     @attendance = Attendance.find(params[:attendance_id])
     @superiors = User.where(superior: true).where.not(id: @user.id)
   end
   
-  def update_overtime_reqest
+  # 残業申請モーダルからのリクエストを保存
+  def update_overwork_reqest
     @user = User.find(params[:user_id])
     @attendance = Attendance.find(params[:attendance_id])
     params[:attendance][:over_request_status] = "申請中"
@@ -71,18 +73,49 @@ class AttendancesController < ApplicationController
     redirect_to @user
   end
   
+  # 上長側、残業申請通知画面をポップアップで表示
+  def edit_overwork_notice
+    @user = User.find(params[:user_id])
+    @attendances = Attendance.where(over_request_status: "申請中", over_request_superior: @user.id).order(:worked_on).group_by(&:user_id)
+  end
+  
+  # 上長側、残業申請結果を送信する機能
+  def edit_overwork_approval
+    @user = User.find(params[:user_id])
+    c1 = 0
+    ActiveRecord::Base.transaction do # トランザクションを開始します。
+      overwork_approval_params.each do |id, item|
+        attendance = Attendance.find(id)
+        if item[:change] == "1"
+          c1 += 1
+          attendance.update_attributes!(item)
+        end
+      end
+    end
+    flash[:success] = "残業申請の結果を#{c1}件、送信しました"
+    redirect_to @user
+  rescue ActiveRecord::RecordInvalid # トランザクションによるエラーの分岐です。
+    flash[:danger] = "無効な入力データがあった為、更新をキャンセルしました。"
+    redirect_to @user
+  end
+  
+  
   private
   
-   # 1ヶ月分の勤怠情報を扱います。
-   def attendances_params
-     params.require(:user).permit(attendances: [:started_at, :finished_at, :note])[:attendances]
-   end
+  # beforeフィルター
+  
+  # 1ヶ月分の勤怠情報を扱います。
+  def attendances_params
+    params.require(:user).permit(attendances: [:started_at, :finished_at, :note])[:attendances]
+  end
    
-    def overwork_params
-      params.require(:attendance).permit(:scheduled_end_time, :work_description, :next_day, :over_request_superior, :over_request_status)
-    end
-   
-   # beforeフィルター
+  def overwork_params
+    params.require(:attendance).permit(:scheduled_end_time, :work_description, :next_day, :over_request_superior, :over_request_status)
+  end
+
+  def overwork_approval_params
+    params.require(:user).permit(attendances: [:over_request_status, :change])[:attendances]
+  end
    
    # 管理権限者、または現在ログインしているユーザーを許可します。
    def admin_or_correct_user

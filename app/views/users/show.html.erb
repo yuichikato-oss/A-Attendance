@@ -106,11 +106,25 @@
             <% end %>
           </td>
           <td><%= day.note %></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
+          <td><%= l(day.scheduled_end_time, format: :hour) if day.scheduled_end_time.present? %></td>
+          <td><%= l(day.scheduled_end_time, format: :min) if day.scheduled_end_time.present? %></td>
+          <td>
+            <% if day.scheduled_end_time.present? %>
+              <%= working_overtime(day.scheduled_end_time, @user.designated_work_end_time, day.next_day) %>
+            <% end %>
+          </td>
+          <td><%= day.work_description %></td>
+          <td>
+            <% if day.scheduled_end_time.present? %>
+              <%= superiors(day.over_request_superior).name %>
+                <% if day.over_request_status == "申請中" %>
+                  へ 
+                <% else %>
+                  より結果 → 
+                <% end %>
+              残業 <%= day.over_request_status %>
+            <% end %>
+          </td>
         </tr>
       <% end %>
     </tbody>
@@ -137,3 +151,4 @@
 <div>
   <!--[残業申請モーダル]-->
   <div id="edit-overwork-reqest" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+  <div id="edit-overwork-notice" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
