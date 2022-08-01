@@ -106,6 +106,7 @@
             <% end %>
           </td>
           <td><%= day.note %></td>
+          <% if day.over_request_status == "承認" %>
           <td><%= l(day.scheduled_end_time, format: :hour) if day.scheduled_end_time.present? %></td>
           <td><%= l(day.scheduled_end_time, format: :min) if day.scheduled_end_time.present? %></td>
           <td>
@@ -114,6 +115,12 @@
             <% end %>
           </td>
           <td><%= day.work_description %></td>
+          <% else %>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <% end %>
           <td>
             <% if day.scheduled_end_time.present? %>
               <%= superiors(day.over_request_superior).name %>

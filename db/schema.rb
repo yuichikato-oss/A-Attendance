@@ -24,7 +24,7 @@ ActiveRecord::Schema.define(version: 20220725113042) do
     t.string "work_description"
     t.string "next_day"
     t.integer "over_request_superior"
-    t.string "over_request_status"
+    t.string "over_request_status" 
     t.boolean "change", default: false
     t.index ["user_id"], name: "index_attendances_on_user_id"
   end
