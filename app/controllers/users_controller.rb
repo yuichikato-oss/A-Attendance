@@ -100,7 +100,7 @@ class UsersController < ApplicationController
 
    # 勤怠修正ログ
   def attendance_log
-    @attendances = Attendance.where(user_id: @user).where(c_approval: "承認").order(worked_on: "DESC")
+    @attendances = Attendance.where(user_id: @user).where(edit_day_request_status: "承認").order(worked_on: "DESC")
     
     if params[:attendance].present?
       unless params[:attendance][:worked_on] == ""

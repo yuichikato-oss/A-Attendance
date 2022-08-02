@@ -21,15 +21,28 @@
       <th>承認日</th>
     </tr>
   </thead>
-  
-  
+   <% if @attendances.present? %>
+    <% @attendances.each do |day| %>
       <tbody>
         <tr>
-        
-          
+        <% if day.edit_day_request_status == "承認" %>
+          <!--日付-->
+          <td><%=  l(day.worked_on, format: :short)  %></td>
+          <!--変更前-->
+          <td><%= l(day.edit_day_started_at, format: :time) if day.edit_day_started_at.present? %></td>
+          <td><%= l(day.edit_day_finished_at, format: :time) if day.edit_day_finished_at.present? %></td>
+          <!--変更後-->
+          <td><%= l(day.last_edit_day_started_at, format: :time) if day.last_edit_day_started_at.present? %></td>
+          <td><%= l(day.last_edit_day_finished_at, format: :time) if day.last_edit_day_finished_at.present? %></td>
+          <!--指示者-->
+          <td><%= User.find(day.edit_day_request_superior).name %></td>
+          <!--承認日-->
+          <td><%= l(day.updated_at, format: :time) %></td>
+        <% end %>          
         </tr>
       </tbody>
-    
+    <% end %>
+  <% end %>    
 </table>
 
 
