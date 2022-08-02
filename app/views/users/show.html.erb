@@ -27,8 +27,13 @@
 
 <div class="btn-users-show">
   <% if current_user.superior? %>
+  <% if @edit_day_reqest.present? %>
+      <%= link_to "【勤怠変更のお知らせ】", user_attendance_edit_day_notice_path(@user, @attendances), remote: true, class: "text text-danger" %><%= @edit_day_reqest.count %>件
+    <% else %>
+      <a>【勤怠変更申請のお知らせ】</a>
+    <% end %>
+    <br>
     <% if @overwork_reqest.present? %>
-      <!-- link_to "【サンプル　残業申請のお知らせ】", user_attendance_sample_edit_overwork_notice_path(@user, @attendances) %> -->
       <%= link_to "【残業申請のお知らせ】", user_attendance_edit_overwork_notice_path(@user, @attendances), remote: true, class: "text text-danger" %><%= @overwork_reqest.count %>件
     <% else %>
       <a>【残業申請のお知らせ】</a>
@@ -88,24 +93,47 @@
           </td>
           <td><%= l(day.worked_on, format: :short) %></td>
           <td class='<%= "wday#{day.worked_on.wday}" %>'><%= $days_of_the_week[day.worked_on.wday] %></td>
-          <td><%= l(day.started_at.floor_to(15.minutes), format: :hour) if day.started_at.present? %></td>
-          <td><%= l(day.started_at.floor_to(15.minutes), format: :min) if day.started_at.present? %></td>
+          
+          <% if day.last_edit_day_started_at.nil? && day.edit_day_request_status == "承認" %>
+            <td><%= l(day.edit_day_started_at, format: :hour) %></td>
+            <td><%= l(day.edit_day_started_at, format: :min) %></td>
+          <% elsif day.edit_day_started_at.present? && day.edit_day_request_status == "承認" %>
+            <td><%= l(day.last_edit_day_started_at, format: :hour) %></td>
+            <td><%= l(day.last_edit_day_started_at, format: :min) %></td>
+          <% else %>
+            <td><%= l(day.started_at, format: :hour) if day.started_at.present? %></td>
+            <td><%= l(day.started_at, format: :min) if day.started_at.present? %></td>
+          <% end %>
           <td>
             <% if btn_text = attendance_state(day) %>
-              <%= link_to "#{btn_text}登録", user_attendance_path(@user, day), method: :patch,
-              class: "btn btn-primary btn-attendance" %>
+              <%= link_to "#{btn_text}", user_attendance_path(@user, day), method: :patch, class: "btn btn-primary btn-attendance" %>
             <% end %>
           </td>
-          <td><%= l(day.finished_at.floor_to(15.minutes), format: :hour) if day.finished_at.present? %></td>
-          <td><%= l(day.finished_at.floor_to(15.minutes), format: :min) if day.finished_at.present? %></td>
+          <% if day.last_edit_day_started_at.nil? && day.edit_day_request_status == "承認" %>
+            <td><%= l(day.edit_day_finished_at, format: :hour) %></td>
+            <td><%= l(day.edit_day_finished_at, format: :min) %></td>
+          <% elsif day.last_edit_day_finished_at.present? && day.edit_day_request_status == "承認" %>
+            <td><%= l(day.last_edit_day_finished_at, format: :hour) %></td>
+            <td><%= l(day.last_edit_day_finished_at, format: :min) %></td>
+          <% else %>
+            <td><%= l(day.finished_at, format: :hour) if day.finished_at.present? %></td>
+            <td><%= l(day.finished_at, format: :min) if day.finished_at.present? %></td>
+            <td></td>
+          <% end %>
           <td></td>
           <td>
-            <% if day.started_at.present? && day.finished_at.present? %>
-              <%= str_times = working_times(day.started_at, day.finished_at) %>
-              <% @total_working_times = @total_working_times.to_f + str_times.to_f %>
+            <% if day.finished_at.present? && day.edit_day_finished_at.nil? %>
+              <%= working_times(day.started_at, day.finished_at) %>
+            <% elsif day.edit_day_finished_at.present? && day.edit_day_request_status == "承認" %>
+              <%= edit_working_times(day.edit_day_started_at, day.edit_day_finished_at, day.next_day) %>
             <% end %>
           </td>
+          
+          <% if day.edit_day_request_status == "承認" %>
           <td><%= day.note %></td>
+          <% else %>
+          <% end %>
+          
           <% if day.over_request_status == "承認" %>
           <td><%= l(day.scheduled_end_time, format: :hour) if day.scheduled_end_time.present? %></td>
           <td><%= l(day.scheduled_end_time, format: :min) if day.scheduled_end_time.present? %></td>
@@ -131,10 +159,20 @@
                 <% end %>
               残業 <%= day.over_request_status %>
             <% end %>
+            <br>
+            <% if day.edit_day_request_superior.present? %>
+              <%= User.find(day.edit_day_request_superior).name %>
+                <% if day.edit_day_request_status == "申請中" %>
+                  へ 
+                <% else %>
+                  より結果 → 
+                <% end %>
+              勤怠変更 <%= day.edit_day_request_status %>
+            <% end %>
           </td>
         </tr>
-      <% end %>
-    </tbody>
+      </tbody>
+    <% end %>
     
     <tfoot>
       <!--rowspan:縦結合、colspan：横結合-->
@@ -159,3 +197,4 @@
   <!--[残業申請モーダル]-->
   <div id="edit-overwork-reqest" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
   <div id="edit-overwork-notice" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>
+  <div id="edit-day-notice" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true"></div>

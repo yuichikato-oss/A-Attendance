@@ -27,25 +27,28 @@ class AttendancesController < ApplicationController
   end
   
   def edit_one_month
+     @superiors = User.where(superior: true).where.not(id: @user.id)
   end
   
   def update_one_month
+    c1 = 0
     ActiveRecord::Base.transaction do # トランザクションを開始します。
       attendances_params.each do |id, item|
-        if item[:started_at].blank? && item[:finished_at].present?
-          flash[:danger] = "開始時間がないと終了時間の入力はできません。"
-          redirect_to attendances_edit_one_month_user_url(date: params[:date]) and return
-        elsif item[:started_at].present? && item[:finished_at].blank?
-          flash[:danger] = "終了時間がないと開始時間の入力はできません。"
-          redirect_to attendances_edit_one_month_user_url(date: params[:date]) and return
-        else
-          attendance = Attendance.find(id)
+        attendance = Attendance.find(id)
+        if item[:edit_day_request_superior].present?
+          item[:edit_day_request_status] = "申請中"
+          c1 += 1
           attendance.update_attributes!(item)
         end
       end
     end
-      flash[:success] = "1ヶ月分の勤怠情報を更新しました。"
-      redirect_to user_url(date: params[:date]) and return
+    if c1 > 0
+      flash[:success] = "勤怠編集を#{c1}件、申請しました。"
+      redirect_to user_url(date: params[:date])
+    else
+      flash[:danger] = "上長を選択してください"
+      redirect_to attendances_edit_one_month_user_url(date: params[:date])
+    end  
     
   rescue ActiveRecord::RecordInvalid # トランザクションによるエラーの分岐です。
     flash[:danger] = "無効な入力データがあった為、更新をキャンセルしました。"
@@ -99,6 +102,32 @@ class AttendancesController < ApplicationController
     redirect_to @user
   end
   
+  # 勤怠変更申請お知らせモーダル
+  def edit_day_notice
+    @user = User.find(params[:user_id])
+    @superiors = User.where(superior: true).where.not(id: @user.id)
+    @attendances = Attendance.where(edit_day_request_status: "申請中", edit_day_request_superior: @user.id).order(:worked_on).group_by(&:user_id)
+  end
+  
+  #勤怠変更申請結果を送信するアクション
+  def edit_day_approval
+    @user = User.find(params[:user_id])
+    c1 = 0
+    ActiveRecord::Base.transaction do # トランザクションを開始します。
+      edit_day_approval_params.each do |id, item|
+        attendance = Attendance.find(id)
+        if item[:edit_day_check_confirm] == "1"
+          c1 += 1
+          attendance.update_attributes!(item)
+        end
+      end
+    end
+    flash[:success] = "勤怠編集申請の#{c1}件、結果を送信しました"
+    redirect_to @user
+  rescue ActiveRecord::RecordInvalid # トランザクションによるエラーの分岐です。
+    flash[:danger] = "無効な入力データがあった為、更新をキャンセルしました。"
+    redirect_to @user
+  end
   
   private
   
@@ -106,8 +135,17 @@ class AttendancesController < ApplicationController
   
   # 1ヶ月分の勤怠情報を扱います。
   def attendances_params
-    params.require(:user).permit(attendances: [:started_at, :finished_at, :note])[:attendances]
-  end
+      params.require(:user).permit(attendances: [:started_at,
+                                                 :finished_at,
+                                                 :note,
+                                                 :next_day,
+                                                 :edit_day_request_superior,
+                                                 :edit_day_request_status,
+                                                 :edit_day_started_at,
+                                                 :edit_day_finished_at,
+                                                 :last_edit_day_started_at,
+                                                 :last_edit_day_finished_at])[:attendances]
+    end
    
   def overwork_params
     params.require(:attendance).permit(:scheduled_end_time, :work_description, :next_day, :over_request_superior, :over_request_status)
@@ -116,6 +154,10 @@ class AttendancesController < ApplicationController
   def overwork_approval_params
     params.require(:user).permit(attendances: [:over_request_status, :change])[:attendances]
   end
+  
+  def edit_day_approval_params
+    params.require(:user).permit(attendances: [:edit_day_request_status, :edit_day_check_confirm])[:attendances]
+  end  
    
    # 管理権限者、または現在ログインしているユーザーを許可します。
    def admin_or_correct_user

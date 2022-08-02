@@ -25,7 +25,7 @@
             <tr>
               <td><%= l(@attendance.worked_on, format: :short) %></td>
               <td class='<%= "wday#{@attendance.worked_on.wday}" %>'><%= $days_of_the_week[@attendance.worked_on.wday] %></td>
-              <td><%= f.time_select :scheduled_end_time, {class: "form-control",required: true } %></td>
+              <td><%= f.time_field :scheduled_end_time, {class: "form-control",required: true } %></td>
               <td><%= f.check_box :next_day, id: "test" %></td>
               <td><%= f.text_field :work_description, {class: "form-control",required: true } %></td>
               <td class="dropdown_menu"><%= f.collection_select(:over_request_superior, @superiors, :id, :name, { include_blank: "選択してください" }, :required => true) %></td>
