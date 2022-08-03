@@ -1,25 +1,18 @@
-require 'csv'
-
-CSV.generate do |csv|
-  csv_column_names = %w(日付 出社時間 退社時間)
-  csv << csv_column_names
-  @attendances.each do |attendance|
-    
-    @started_at = ""
-    @finished_at = ""
-    unless attendance.started_at.nil?
-      @started_at = attendance.started_at.floor_to(15.minutes).strftime("%H:%M")
-    end
-    unless attendance.finished_at.nil?
-      @finished_at = attendance.finished_at.floor_to(15.minutes).strftime("%H:%M")
-    end
-    
-    column_values = [
-      attendance.worked_on.strftime("%m/%d"),
-      @started_at,
-      @finished_at
-    ]
-    
-    csv << column_values
-  end
-end
+  CSV.generate(encoding: Encoding::SJIS, write_headers: true, force_quotes: true) do |csv|
+      csv_headers = ["日付","曜日", "出社時間", "退社時間","変更後出社時間","変更後退社時間","備考"]
+      day_of_the_week = ["日", "月", "火", "水", "木", "金", "土"]
+      csv << csv_headers
+      @attendances.each do |day|
+        values = [
+          day.worked_on.strftime('%m/%d'),
+          day_of_the_week[day.worked_on.wday],
+          day&.started_at&.strftime('%H:%M'),
+          day&.finished_at&.strftime('%H:%M'),
+          day&.last_edit_day_started_at&.strftime('%H:%M'),
+          day&.last_edit_day_finished_at&.strftime('%H:%M'),
+          day.note
+        ]
+  
+        csv << values
+      end   
+    end 
