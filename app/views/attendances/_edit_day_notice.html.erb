@@ -56,7 +56,7 @@
                       <td><%= day.note %></td>
                       <td><%= item.select :edit_day_request_status, ['なし', '申請中', '承認', '否認'] %></td>
                       <td><%= item.check_box :edit_day_check_confirm, id: "test" %></td>
-                      <td><%= link_to "確認", "#", target: :_blank, class: "btn btn-primary" %></td>
+                      <td><%= link_to "確認", show_confirmation_user_path(id), target: :_blank, class: "btn btn-primary" %></td>
                     </tr>
                   </tbody>
                 <% end %>

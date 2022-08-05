@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   include SessionsHelper
-  
+
   $days_of_the_week = %w{ 日 月 火 水 木 金 土 }
   
   # before フィルター
@@ -29,6 +29,13 @@ class ApplicationController < ActionController::Base
   def admin_user
     redirect_to root_url unless current_user.admin?
   end
+  
+  # 管理者自身の勤怠表示、編集ができないようにする。
+  def admin_not
+    if current_user.admin?
+      redirect_to root_url
+    end
+  end  
 
    # 管理権限者、または現在ログインしているユーザーを許可します。
   def admin_or_correct_user

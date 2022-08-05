@@ -1,6 +1,6 @@
 class AttendancesController < ApplicationController
-  before_action :set_user, only: [:edit_one_month, :update_one_month]
-  before_action :logged_in_user, only: [:update, :edit_one_month, :edit_overwork_reqest, :update_overwork_reqest]
+  before_action :set_user, only: [:edit_one_month, :update_one_month, :edit_monthly_request]
+  before_action :logged_in_user, only: [:update, :edit_one_month, :edit_overwork_reqest, :update_overwork_reqest, :edit_monthly_request]
   before_action :admin_or_correct_user, only: [:update, :edit_one_month, :update_one_month]
   before_action :set_one_month, only: [:edit_one_month]
   
@@ -129,6 +129,41 @@ class AttendancesController < ApplicationController
     redirect_to @user
   end
   
+  # 右下の月の勤怠申請アクション
+  def edit_monthly_request
+    @apply = @user.attendances.find_by(worked_on: params[:date])
+    params[:edit_one_month_request_status] = "申請中"
+    @apply.update_attributes(monthly_request_params)
+    flash[:success] = "1ヶ月分の勤怠情報を申請しました。"
+    redirect_to user_url(current_user)
+  end  
+  
+  # 月の勤怠申請のお知らせ画面　モーダルで表示
+  def edit_one_month_notice
+    @user = User.find(params[:user_id])
+    @attendances = Attendance.where(edit_one_month_request_status: "申請中", edit_one_month_request_superior: @user.id).order(:worked_on).group_by(&:user_id)
+  end  
+  
+  # 月の勤怠申請結果を送信　アクション
+  def edit_one_month_approval
+    @user = User.find(params[:user_id])
+    c1 = 0
+    ActiveRecord::Base.transaction do # トランザクションを開始します。
+      monthly_approval_params.each do |id, item|
+        attendance = Attendance.find(id)
+        if item[:edit_one_month_check_confirm] == "1"
+          c1 += 1
+          attendance.update_attributes!(item)
+        end
+      end
+    end
+    flash[:success] = "所属長承認申請の結果を#{c1}件、送信しました"
+    redirect_to @user
+  rescue ActiveRecord::RecordInvalid # トランザクションによるエラーの分岐です。
+    flash[:danger] = "無効な入力データがあった為、更新をキャンセルしました。"
+    redirect_to @user
+  end
+  
   private
   
   # beforeフィルター
@@ -157,6 +192,14 @@ class AttendancesController < ApplicationController
   
   def edit_day_approval_params
     params.require(:user).permit(attendances: [:edit_day_request_status, :edit_day_check_confirm])[:attendances]
+  end
+  
+  def monthly_request_params
+    params.permit(:edit_one_month_request_superior, :edit_one_month_request_status)
+  end
+  
+  def monthly_approval_params
+    params.require(:user).permit(attendances: [:edit_one_month_request_status, :edit_one_month_check_confirm])[:attendances]
   end  
    
    # 管理権限者、または現在ログインしているユーザーを許可します。

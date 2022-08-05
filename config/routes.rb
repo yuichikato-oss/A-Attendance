@@ -20,18 +20,22 @@ Rails.application.routes.draw do
       get 'csv_export'
       get 'attendances/edit_one_month'
       patch 'attendances/update_one_month'
-      
+      patch 'attendances/edit_monthly_request'
+      get 'show_confirmation'
     end
     resources :attendances do
       get 'edit_overwork_reqest'
       get 'edit_overwork_notice'
       get 'edit_day_notice'
+      get 'edit_one_month_notice'
       
       patch 'update_overwork_reqest'
       
       collection do
         patch 'edit_overwork_approval'
         patch 'edit_day_approval'
+        patch 'edit_one_month_approval'
+        
       end
     end
   end

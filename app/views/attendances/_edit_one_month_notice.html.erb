@@ -1,0 +1,43 @@
+<%= csrf_meta_tags %>
+<%= form_with(model: @user, url:edit_one_month_approval_user_attendances_path(@user), local: true, method: :patch) do |f| %>
+  <div class="modal-dialog modal-lg modal-dialog-center">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <% @attendances.each do |id, attendances| %>
+        <% user = User.find(id) %>
+        <h4 class="modal-title center">【<%= user.name %>】からの１ヶ月分勤怠申請</h4>
+          <div class="modal-body">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th  class="center">月</th>
+                  <th class="center">指示者確認印</th>
+                  <th class="center">変更</th>
+                  <th class="center">勤怠を確認する</th>
+                </tr>
+              </thead>
+              <% attendances.each do |day| %>
+                <%= f.fields_for "attendances[]", day do |item| %>
+                  <tbody>
+                    <tr>
+                      <td class="center"><%= l(day.worked_on, format: :middle) %></td>
+                      <td class="center"><%= item.select :edit_one_month_request_status, ['なし', '申請中', '承認', '否認'] %></td>
+                      <td class="center"><%= item.check_box :edit_one_month_check_confirm, id: "test" %></td>
+                      <td class="center"><%= link_to "確認", "#", target: :_blank, class: "btn btn-primary" %></td>
+                    </tr>
+                  </tbody>
+                <% end %>
+              <% end %>
+            </table>
+          </div>
+        <% end %>
+      <div class= center>
+        <%= submit_tag "変更を送信する" %>
+      </div>
+    </div>
+  </div>
+<% end %>

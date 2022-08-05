@@ -1,12 +1,13 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy, :edit_basic_info, :edit_basic_info_admin, :update_basic_info, :working_list, :attendance_log, :csv_export]
+  before_action :set_user, only: [:show, :show_confirmation, :edit, :update, :destroy, :edit_basic_info, :edit_basic_info_admin, :update_basic_info, :working_list, :attendance_log, :csv_export]
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy, :edit_basic_info, :update_basic_info, :attendance_log, :working_list]
   before_action :correct_user, only: [:edit, :update, :attendance_log]
-  before_action :admin_user, only: [:destroy, :edit_basic_info, :update_basic_info]
+  before_action :admin_user, only: [:destroy, :edit_basic_info, :update_basic_info, :edit_basic_info_admin,]
   before_action :admin_or_correct_user, only: [:index, :show, :edit, :update, :working_list]
-  before_action :set_one_month, only: [:show, :attendance_log, :csv_export]
-  
+  before_action :set_one_month, only: [:show, :show_confirmation, :attendance_log, :csv_export]
+  before_action :admin_not, only:[:show, :edit]  
   def index
+    
     @users = User.paginate(page: params[:page],per_page: 10).search(params[:search])
   end
   
@@ -14,10 +15,21 @@ class UsersController < ApplicationController
     @worked_sum = @attendances.where.not(started_at: nil).count
     @overwork_reqest = Attendance.where(over_request_status: "申請中", over_request_superior: @user.id)
     @edit_day_reqest = Attendance.where(edit_day_request_status: "申請中", edit_day_request_superior: @user.id)
+    @edit_monthly_request = Attendance.where(edit_one_month_request_status: "申請中", edit_one_month_request_superior: @user.id)
     @superiors = User.where(superior: true).where.not(id: @user.id)
+    @apply = @user.attendances.find_by(worked_on: @first_day)
   end
   
- def csv_export
+  def show_confirmation
+    @worked_sum = @attendances.where.not(started_at: nil).count
+    @overwork_reqest = Attendance.where(over_request_status: "申請中", over_request_superior: @user.id)
+    @edit_day_reqest = Attendance.where(edit_day_request_status: "申請中", edit_day_request_superior: @user.id)
+    @edit_monthly_request = Attendance.where(edit_one_month_request_status: "申請中", edit_one_month_request_superior: @user.id)
+    @superiors = User.where(superior: true).where.not(id: @user.id)
+    @apply = @user.attendances.find_by(worked_on: @first_day)
+  end
+  
+  def csv_export
     respond_to do |format|
       format.html do
           #html用の処理を書く
