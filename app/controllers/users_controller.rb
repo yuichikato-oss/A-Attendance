@@ -135,6 +135,6 @@ class UsersController < ApplicationController
   end
   
   def basic_info_params
-    params.require(:user).permit(:name, :email, :department, :basic_work_time, :employee_number, :uid, :password, :password_confirmation)
+    params.require(:user).permit(:name, :email, :department, :basic_work_time, :basic_time, :employee_number, :uid, :password, :password_confirmation)
   end
 end
